@@ -199,6 +199,48 @@
 
   footer{ border-top:1px solid var(--line); padding:2rem clamp(1.5rem, 5vw, 4rem); display:flex; justify-content:space-between; font-size:0.82rem; color:var(--dim); flex-wrap:wrap; gap:0.5rem; }
 
+  /* ---------- One-tap Visit All Sites launcher ---------- */
+  #launcherBtn{
+    position:fixed; bottom:1.6rem; right:1.6rem; z-index:900;
+    width:58px; height:58px; border-radius:50%;
+    background:var(--accent); color:#161616; border:none;
+    font-size:1.4rem; cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+    box-shadow:0 4px 18px rgba(0,0,0,0.4);
+    transition:transform .2s ease, background .2s ease;
+  }
+  #launcherBtn:hover{ transform:scale(1.06); background:var(--accent2); }
+  #launcherBtn.open{ transform:rotate(45deg); }
+
+  #launcherPanel{
+    position:fixed; bottom:5.2rem; right:1.6rem; z-index:900;
+    width:280px;
+    background:var(--panel);
+    border:1px solid var(--line);
+    box-shadow:0 10px 30px rgba(0,0,0,0.45);
+    padding:1rem;
+    transform:translateY(12px) scale(0.98);
+    opacity:0;
+    pointer-events:none;
+    transition:transform .22s ease, opacity .22s ease;
+  }
+  #launcherPanel.open{ transform:translateY(0) scale(1); opacity:1; pointer-events:auto; }
+  #launcherPanel h4{ font-family:'Bitter', serif; font-size:1rem; margin-bottom:0.7rem; color:var(--ink); }
+  .launcher-list{ display:flex; flex-direction:column; gap:0.5rem; }
+  .launcher-list a{
+    display:flex; align-items:center; justify-content:space-between;
+    text-decoration:none; font-size:0.86rem;
+    padding:0.55rem 0.7rem;
+    border:1px solid var(--line);
+    background:var(--panel2);
+    color:var(--ink);
+    transition:border-color .15s ease, color .15s ease;
+  }
+  .launcher-list a:hover{ border-color:var(--accent); color:var(--accent); }
+  .launcher-list a.disabled{ opacity:0.45; pointer-events:none; }
+  .launcher-list a .arrow{ opacity:0.6; }
+  #launcherPanel .hint{ font-size:0.74rem; color:var(--dim); margin-top:0.8rem; text-align:center; }
+
   @media (max-width: 900px){
     .featured-grid{ grid-template-columns:1fr 1fr; }
     .case{ grid-template-columns:1fr; }
@@ -541,7 +583,54 @@
   <span>asifuzzaman3761@gmail.com · WhatsApp +880 1951467502</span>
 </footer>
 
+<!-- One-tap "visit all sites" launcher -->
+<button id="launcherBtn" aria-label="Visit all sites" aria-expanded="false">⚡</button>
+<div id="launcherPanel">
+  <h4>Visit my sites</h4>
+  <div class="launcher-list" id="launcherList">
+    <!-- populated from SITE_LINKS below -->
+  </div>
+  <p class="hint">One tap opens the site in a new tab</p>
+</div>
+
 <script>
+  // ---- Central list of all sites for the one-tap launcher ----
+  // Fill in a real URL for any entry marked null and it becomes tappable automatically.
+  const SITE_LINKS = [
+    { name: "Arctic Hour", url: null },
+    { name: "Clasp & Co", url: null },
+    { name: "Eato's", url: "https://asif3761.github.io/EATO-S/" },
+    { name: "Sundown & Sage", url: "https://asif3761.github.io/gadget-s_empire.bd" },
+    { name: "Gadget's Empire", url: null },
+    { name: "Noir & Aurum", url: null }
+  ];
+  const launcherList = document.getElementById('launcherList');
+  SITE_LINKS.forEach(site => {
+    const a = document.createElement('a');
+    if (site.url){
+      a.href = site.url; a.target = "_blank"; a.rel = "noopener";
+      a.innerHTML = `<span>${site.name}</span><span class="arrow">↗</span>`;
+    } else {
+      a.href = "#"; a.classList.add('disabled');
+      a.innerHTML = `<span>${site.name}</span><span class="arrow">soon</span>`;
+    }
+    launcherList.appendChild(a);
+  });
+
+  const launcherBtn = document.getElementById('launcherBtn');
+  const launcherPanel = document.getElementById('launcherPanel');
+  launcherBtn.addEventListener('click', () => {
+    const isOpen = launcherPanel.classList.toggle('open');
+    launcherBtn.classList.toggle('open', isOpen);
+    launcherBtn.setAttribute('aria-expanded', isOpen);
+  });
+  document.addEventListener('click', (e) => {
+    if (!launcherPanel.contains(e.target) && !launcherBtn.contains(e.target)){
+      launcherPanel.classList.remove('open');
+      launcherBtn.classList.remove('open');
+    }
+  });
+
   // ---- Reveal on scroll ----
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
