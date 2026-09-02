@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Asif — Web Developer Portfolio</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bitter:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Archivo:wght@400;500;600&display=swap');
+
+  :root{
+    --paper:#EBEBE8;
+    --panel:#F5F5F3;
+    --ink:#1E1E1D;
+    --moss:#42504A;
+    --clay:#B5502F;
+    --sand:#DADAD5;
+    --line: rgba(30,30,29,0.14);
+  }
+
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Archivo', sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,.display{
+    font-family:'Bitter', serif;
+    letter-spacing:-0.01em;
+    margin:0;
+  }
+  a{color:inherit;}
+
+  .reveal{ opacity:0; transform:translateY(14px); transition:opacity .6s ease, transform .6s ease; }
+  .reveal.is-visible{ opacity:1; transform:translateY(0); }
+  @media (prefers-reduced-motion: reduce){
+    .reveal{ opacity:1; transform:none; transition:none; }
+    html{ scroll-behavior:auto; }
+  }
+
+  header{
+    position:sticky; top:0; z-index:20;
+    display:flex; justify-content:space-between; align-items:center; gap:1.5rem;
+    padding:1.5rem clamp(1.5rem, 5vw, 4rem);
+    border-bottom:1px solid var(--line);
+    background:rgba(235,235,232,0.92);
+    backdrop-filter:blur(6px);
+  }
+  .brand{ font-family:'Bitter', serif; font-weight:700; font-size:1.3rem; white-space:nowrap; }
+  .brand span{ color:var(--clay); }
+  nav{ display:flex; gap:1.6rem; font-size:0.9rem; }
+  nav a{ text-decoration:none; border-bottom:1px solid transparent; padding-bottom:2px; transition:border-color .15s ease; }
+  nav a:hover, nav a:focus-visible{ border-color:var(--ink); }
+  .search-box{
+    display:flex; align-items:center; border:1px solid var(--line);
+    background:var(--panel); padding:0.4rem 0.7rem; gap:0.4rem; min-width:180px; flex:0 1 260px;
+  }
+  .search-box input{ border:none; background:transparent; outline:none; font-family:'Archivo', sans-serif; font-size:0.85rem; width:100%; color:var(--ink); }
+  .search-box svg{ flex-shrink:0; opacity:0.6; }
+
+  .hero{
+    padding:clamp(2.5rem, 6vw, 5rem) clamp(1.5rem, 5vw, 4rem) clamp(3rem, 6vw, 5rem);
+    display:grid; grid-template-columns: 1.3fr 1fr; gap:3rem;
+    border-bottom:1px solid var(--line); align-items:end;
+  }
+  .hero h1{ font-size:clamp(2.4rem, 5.5vw, 4.6rem); line-height:1.02; font-weight:600; }
+  .hero-meta{ font-size:0.95rem; line-height:1.6; max-width:36ch; align-self:end; }
+  .hero-meta p + p{ margin-top:0.9rem; }
+  .kicker{ font-size:0.85rem; color:var(--moss); margin-bottom:0.8rem; }
+  .role-tags{ display:flex; flex-wrap:wrap; gap:0.5rem; margin-top:1.1rem; }
+  .role-tags span{ border:1px solid var(--line); padding:0.3rem 0.7rem; font-size:0.78rem; background:var(--panel); }
+
+  section{ padding:clamp(2.2rem, 5vw, 3.8rem) clamp(1.5rem, 5vw, 4rem); max-width:1180px; margin:0 auto; }
+  .section-head{ display:flex; justify-content:space-between; align-items:baseline; border-bottom:1px solid var(--line); padding-bottom:0.8rem; margin-bottom:2.2rem; }
+  .section-head h2{ font-size:1.5rem; font-weight:600; }
+  .section-head .count{ font-size:0.85rem; opacity:0.55; }
+
+  .about-grid{ display:grid; grid-template-columns:1fr 1fr; gap:2.5rem; }
+  .about-grid p{ line-height:1.6; font-size:0.98rem; max-width:56ch; }
+  .stat-list{ display:flex; flex-direction:column; gap:1rem; }
+  .stat-row{ display:flex; justify-content:space-between; border-bottom:1px solid var(--line); padding-bottom:0.7rem; font-size:0.92rem; }
+  .stat-row strong{ font-family:'Bitter', serif; font-size:1.05rem; }
+
+  /* ---------- Case study cards ---------- */
+  .cases{ display:grid; grid-template-columns:1fr; gap:1.6rem; }
+  .case{
+    display:grid;
+    grid-template-columns: 220px 1fr;
+    gap:0;
+    border:1px solid var(--line);
+    background:var(--panel);
+    overflow:hidden;
+  }
+  .case.hidden{ display:none; }
+  .case-swatch{
+    position:relative;
+    padding:1.6rem 1.2rem;
+    display:flex; flex-direction:column; justify-content:space-between;
+    color:#fff;
+  }
+  .case-swatch .status{
+    font-size:0.7rem;
+    text-transform:none;
+    background:rgba(255,255,255,0.18);
+    padding:0.25rem 0.55rem;
+    align-self:flex-start;
+    border:1px solid rgba(255,255,255,0.35);
+  }
+  .case-swatch .brand-mark{
+    font-family:'Bitter', serif;
+    font-size:1.6rem;
+    line-height:1.1;
+    font-weight:700;
+  }
+  .case-body{ padding:1.6rem 1.8rem; display:flex; flex-direction:column; gap:0.6rem; }
+  .case-body .kind{ font-size:0.78rem; color:var(--clay); }
+  .case-body h3{ font-size:1.3rem; font-weight:600; }
+  .case-body p{ font-size:0.93rem; line-height:1.55; color:rgba(30,30,29,0.82); max-width:64ch; }
+  .feature-chips{ display:flex; flex-wrap:wrap; gap:0.45rem; margin-top:0.3rem; }
+  .feature-chips span{ font-size:0.74rem; border:1px solid var(--line); background:var(--paper); padding:0.2rem 0.55rem; }
+  .case-links{ margin-top:0.5rem; font-size:0.85rem; display:flex; gap:1.2rem; }
+  .case-links a{ text-decoration:none; border-bottom:1px solid var(--ink); }
+  .case-links .no-link{ opacity:0.5; border-bottom:1px solid transparent; }
+
+  .no-results{ display:none; padding:2rem 0; font-size:0.95rem; opacity:0.65; }
+
+  .contact-wrap{ display:grid; grid-template-columns:1fr 1fr; gap:3rem; }
+  .contact-form{ display:flex; flex-direction:column; gap:1rem; }
+  .field label{ display:block; font-size:0.8rem; margin-bottom:0.35rem; color:var(--moss); }
+  .field input, .field textarea{ width:100%; padding:0.65rem 0.7rem; border:1px solid var(--line); background:var(--panel); font-family:'Archivo', sans-serif; font-size:0.92rem; color:var(--ink); }
+  .field textarea{ resize:vertical; min-height:100px; }
+  .field-row{ display:flex; gap:1rem; }
+  .field-row .field{ flex:1; }
+  .submit-btn{ align-self:flex-start; background:var(--ink); color:var(--paper); border:none; padding:0.75rem 1.6rem; font-family:'Archivo', sans-serif; font-size:0.92rem; cursor:pointer; transition:background .15s ease; }
+  .submit-btn:hover{ background:var(--clay); }
+  .followup-panel{ border:1px solid var(--line); background:var(--panel); padding:1.6rem; }
+  .followup-panel h3{ font-size:1.1rem; margin-bottom:0.8rem; }
+  .followup-panel p{ font-size:0.9rem; line-height:1.55; margin-bottom:1rem; }
+  .followup-options{ display:flex; flex-direction:column; gap:0.6rem; }
+  .followup-options label{ display:flex; align-items:center; gap:0.6rem; font-size:0.88rem; border:1px solid var(--line); padding:0.6rem 0.8rem; cursor:pointer; }
+  .form-note{ font-size:0.8rem; color:rgba(30,30,29,0.55); margin-top:0.8rem; }
+
+  footer{ border-top:1px solid var(--line); padding:2rem clamp(1.5rem, 5vw, 4rem); display:flex; justify-content:space-between; font-size:0.82rem; color:rgba(30,30,29,0.6); flex-wrap:wrap; gap:0.5rem; }
+
+  @media (max-width: 900px){
+    .case{ grid-template-columns:1fr; }
+    .case-swatch{ flex-direction:row; align-items:center; justify-content:space-between; }
+  }
+  @media (max-width: 780px){
+    header{ flex-wrap:wrap; }
+    .search-box{ order:3; flex-basis:100%; }
+    .hero{ grid-template-columns:1fr; gap:1.5rem; }
+    .about-grid{ grid-template-columns:1fr; }
+    .contact-wrap{ grid-template-columns:1fr; }
+    nav{ gap:1rem; font-size:0.85rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">Asif<span>.</span></div>
+  <div class="search-box">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input type="text" id="siteSearch" placeholder="Search projects, theme, features…" aria-label="Search site">
+  </div>
+  <nav>
+    <a href="#work">Work</a>
+    <a href="#about">About</a>
+    <a href="#contact">Contact</a>
+  </nav>
+</header>
+
+<section class="hero reveal">
+  <h1>Six brands. Six completely different worlds. Built from scratch.</h1>
+  <div class="hero-meta">
+    <p class="kicker">Web developer — e-commerce &amp; brand sites</p>
+    <p>Every project below is a full, working site: its own theme, its own motion language, its own sound design. Search by name, theme, or feature to jump straight to one.</p>
+    <div class="role-tags">
+      <span>E-commerce</span>
+      <span>3D & motion design</span>
+      <span>Brand sites</span>
+    </div>
+  </div>
+</section>
+
+<section class="about reveal" id="about">
+  <div class="section-head"><h2>About</h2></div>
+  <div class="about-grid">
+    <p>I design and build complete brand websites — not templates. Each project below started as a blank page and a theme, and became a full multi-page site with its own cart system, transition style, and sound identity. I work closely with clients through every revision until the site actually feels like their brand, not a generic storefront.</p>
+    <div class="stat-list">
+      <div class="stat-row"><span>Focus</span><strong>E-commerce & brand websites</strong></div>
+      <div class="stat-row"><span>Sites shipped</span><strong>6 and counting</strong></div>
+      <div class="stat-row"><span>Signature</span><strong>Themed 3D, motion & sound</strong></div>
+      <div class="stat-row"><span>Available for</span><strong>Freelance projects</strong></div>
+    </div>
+  </div>
+</section>
+
+<section class="feed" id="work">
+  <div class="section-head">
+    <h2>Case studies</h2>
+    <span class="count" id="entryCount">6 projects</span>
+  </div>
+
+  <div class="cases" id="entryList">
+
+    <article class="case reveal" data-search="arctic hour watches accessories ice glacier 3d threejs sound">
+      <div class="case-swatch" style="background:linear-gradient(160deg,#274257,#6FA8C9);">
+        <span class="status">Live build</span>
+        <span class="brand-mark">ARCTIC HOUR</span>
+      </div>
+      <div class="case-body">
+        <span class="kind">Watches & accessories — e-commerce</span>
+        <h3>A glacier-ice world with real 3D and sound</h3>
+        <p>Built around a "glacier ice / smokey nitrous" theme: a snowflake mouse cursor, an ice-shatter page transition (rebuilt as a two-sided ice-gate), drifting 3D product displays in Three.js, and synthesized ice sound effects — plus a full cart with WhatsApp + bKash checkout.</p>
+        <div class="feature-chips"><span>Three.js 3D</span><span>Custom cursor</span><span>Sound design</span><span>Cart & checkout</span></div>
+        <div class="case-links"><span class="no-link">Private build — link on request</span></div>
+      </div>
+    </article>
+
+    <article class="case reveal" data-search="clasp co bags wallets belts accessories warm premium fashion">
+      <div class="case-swatch" style="background:linear-gradient(160deg,#7A4A32,#C98A5B);">
+        <span class="status">Live build</span>
+        <span class="brand-mark">CLASP &amp; CO</span>
+      </div>
+      <div class="case-body">
+        <span class="kind">Bags, wallets & wearables — brand site</span>
+        <h3>Approachable premium, not exclusive</h3>
+        <p>A multi-page site (Home, Shop, Our Craft, Reviews, Contact) with a page-turn transition, a custom SVG buckle-motif logo, spring-physics motion, and a "mythic art style of fashion wear" 3D piece placed on the Craft page.</p>
+        <div class="feature-chips"><span>Multi-page</span><span>Custom logo & SVG</span><span>3D showcase</span><span>Page-turn transition</span></div>
+        <div class="case-links"><span class="no-link">Private build — link on request</span></div>
+      </div>
+    </article>
+
+    <article class="case reveal" data-search="eatos food restaurant dhaka editorial avant garde menu booking">
+      <div class="case-swatch" style="background:#111;">
+        <span class="status">Live site</span>
+        <span class="brand-mark">EATO'S</span>
+      </div>
+      <div class="case-body">
+        <span class="kind">Food chain — Dhaka</span>
+        <h3>Editorial, avant-garde, built like a design studio site</h3>
+        <p>Inspired by the Paris studio noth.in: black background, oversized type, a video-style hero, a marquee ticker, and a real Dhaka-priced menu. Voice sound effects greet visitors, announce the menu, and play on booking and page transitions, with a sound on/off toggle.</p>
+        <div class="feature-chips"><span>Editorial layout</span><span>Voice & sound FX</span><span>Real menu & pricing</span></div>
+        <div class="case-links"><a href="https://asif3761.github.io/EATO-S/" target="_blank" rel="noopener">View live site</a></div>
+      </div>
+    </article>
+
+    <article class="case reveal" data-search="sundown sage gadgets empire mid century western facebook shop">
+      <div class="case-swatch" style="background:linear-gradient(160deg,#8C5A2B,#D9A441);">
+        <span class="status">Live site</span>
+        <span class="brand-mark">SUNDOWN &amp; SAGE</span>
+      </div>
+      <div class="case-body">
+        <span class="kind">General e-commerce — Facebook Shop storefront</span>
+        <h3>A mid-century western storefront, free to host</h3>
+        <p>Built for a freelance client selling through a Facebook Page: mid-century western visual direction, Facebook Shop checkout, bKash and WhatsApp support, hosted entirely free on GitHub Pages.</p>
+        <div class="feature-chips"><span>Facebook Shop</span><span>bKash + WhatsApp</span><span>Free GitHub Pages hosting</span></div>
+        <div class="case-links"><a href="https://asif3761.github.io/gadget-s_empire.bd" target="_blank" rel="noopener">View live site</a></div>
+      </div>
+    </article>
+
+    <article class="case reveal" data-search="gadgets empire mobile phones ghost of tsushima game 3d sound anime">
+      <div class="case-swatch" style="background:linear-gradient(160deg,#E8E4DA,#C0392B);">
+        <span class="status">Live build</span>
+        <span class="brand-mark" style="color:#1E1E1D;">GADGET'S EMPIRE</span>
+      </div>
+      <div class="case-body">
+        <span class="kind">Mobile phones & accessories — e-commerce</span>
+        <h3>A game-inspired storefront with real-time motion</h3>
+        <p>Re-themed around Ghost of Tsushima: wind and leaf effects, mouse-reactive motion, blade-shaped buttons, a bright ash palette with crimson/gold accents, swoosh sound on page change, a working discount promo, and 3D extruded brand text with theme-matched lighting.</p>
+        <div class="feature-chips"><span>Game-style motion</span><span>Mouse-reactive FX</span><span>Multi-page + cart</span></div>
+        <div class="case-links"><span class="no-link">Private build — link on request</span></div>
+      </div>
+    </article>
+
+    <article class="case reveal" data-search="noir aurum watches perfumes dark luxury black gold silver assassins creed 3d">
+      <div class="case-swatch" style="background:linear-gradient(160deg,#2b2b2b,#8a8f94);">
+        <span class="status">In progress</span>
+        <span class="brand-mark">NOIR &amp; AURUM</span>
+      </div>
+      <div class="case-body">
+        <span class="kind">Watches & perfumes — luxury e-commerce</span>
+        <h3>From black &amp; gold to a metallic Assassin's Creed steel look</h3>
+        <p>A true 3D site built in Three.js, including 3D page transitions and 3D text — currently in a metallic silver/steel direction with matching UI sound design. Cart and checkout reuse the same WhatsApp + bKash system as the other stores.</p>
+        <div class="feature-chips"><span>Full 3D site</span><span>3D transitions</span><span>Themed UI sound</span></div>
+        <div class="case-links"><span class="no-link">In development</span></div>
+      </div>
+    </article>
+
+  </div>
+
+  <p class="no-results" id="noResults">No projects match that search.</p>
+</section>
+
+<section class="contact reveal" id="contact">
+  <div class="section-head"><h2>Get in touch</h2></div>
+  <div class="contact-wrap">
+    <form class="contact-form" onsubmit="event.preventDefault(); alert('This form is a visual sample — it needs to be connected to an email service or backend before it can actually send messages.');">
+      <div class="field"><label for="name">Name</label><input type="text" id="name" name="name" required></div>
+      <div class="field-row">
+        <div class="field"><label for="email">Email</label><input type="email" id="email" name="email" required></div>
+        <div class="field"><label for="phone">Phone (optional)</label><input type="tel" id="phone" name="phone"></div>
+      </div>
+      <div class="field"><label for="message">Message</label><textarea id="message" name="message" required></textarea></div>
+      <button type="submit" class="submit-btn">Send message</button>
+      <p class="form-note">Sample form — connect this to an email service (like Formspree) or a backend before it can send real messages.</p>
+    </form>
+    <div class="followup-panel">
+      <h3>Request a follow-up</h3>
+      <p>Pick what you'd like followed up on, and leave your contact details in the form.</p>
+      <div class="followup-options">
+        <label><input type="checkbox" name="followup" value="call"> Call me back</label>
+        <label><input type="checkbox" name="followup" value="email"> Email me back</label>
+        <label><input type="checkbox" name="followup" value="new-project"> Discuss a new project</label>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <span>Asif — web developer portfolio</span>
+  <span>asifuzzaman3761@gmail.com · WhatsApp +880 1951467502</span>
+</footer>
+
+<script>
+  const revealEls = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) { entry.target.classList.add('is-visible'); observer.unobserve(entry.target); }
+    });
+  }, { threshold: 0.12 });
+  revealEls.forEach(el => observer.observe(el));
+
+  const searchInput = document.getElementById('siteSearch');
+  const cases = document.querySelectorAll('#entryList .case');
+  const noResults = document.getElementById('noResults');
+  const entryCount = document.getElementById('entryCount');
+
+  searchInput.addEventListener('input', () => {
+    const q = searchInput.value.trim().toLowerCase();
+    let visible = 0;
+    cases.forEach(c => {
+      const haystack = (c.dataset.search + ' ' + c.textContent).toLowerCase();
+      const match = q === '' || haystack.includes(q);
+      c.classList.toggle('hidden', !match);
+      if (match) visible++;
+    });
+    noResults.style.display = visible === 0 ? 'block' : 'none';
+    entryCount.textContent = visible + (visible === 1 ? ' project' : ' projects');
+  });
+</script>
+
+</body>
+</html>
