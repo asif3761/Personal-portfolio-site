@@ -8,13 +8,14 @@
   @import url('https://fonts.googleapis.com/css2?family=Bitter:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Archivo:wght@400;500;600&display=swap');
 
   :root{
-    --paper:#EBEBE8;
-    --panel:#F5F5F3;
-    --ink:#1E1E1D;
-    --moss:#42504A;
-    --clay:#B5502F;
-    --sand:#DADAD5;
-    --line: rgba(30,30,29,0.14);
+    --paper:#111214;
+    --panel:#191a1d;
+    --panel2:#212226;
+    --ink:#EDEDEA;
+    --dim:#9A9C9F;
+    --accent:#C9A24B;
+    --accent2:#5AA6C9;
+    --line: rgba(237,237,234,0.12);
   }
 
   *{box-sizing:border-box;}
@@ -25,13 +26,29 @@
     color:var(--ink);
     font-family:'Archivo', sans-serif;
     -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
   }
-  h1,h2,h3,.display{
-    font-family:'Bitter', serif;
-    letter-spacing:-0.01em;
-    margin:0;
+  h1,h2,h3,.display{ font-family:'Bitter', serif; letter-spacing:-0.01em; margin:0; }
+  a{ color:inherit; }
+  p{ margin:0; }
+
+  /* game cursor - desktop only */
+  @media (pointer: fine){
+    body.custom-cursor-active{ cursor:none; }
+    body.custom-cursor-active a, body.custom-cursor-active button, body.custom-cursor-active input, body.custom-cursor-active textarea{ cursor:none; }
   }
-  a{color:inherit;}
+  #cursorRing{
+    position:fixed; top:0; left:0; width:26px; height:26px;
+    border:1px solid var(--accent);
+    border-radius:50%;
+    pointer-events:none;
+    z-index:999;
+    transform:translate(-50%,-50%);
+    transition:width .18s ease, height .18s ease, border-color .18s ease, background .18s ease;
+    mix-blend-mode:screen;
+  }
+  #cursorRing.hot{ width:44px; height:44px; background:rgba(201,162,75,0.12); border-color:var(--accent2); }
+  #trailCanvas{ position:fixed; inset:0; pointer-events:none; z-index:998; }
 
   .reveal{ opacity:0; transform:translateY(14px); transition:opacity .6s ease, transform .6s ease; }
   .reveal.is-visible{ opacity:1; transform:translateY(0); }
@@ -40,111 +57,150 @@
     html{ scroll-behavior:auto; }
   }
 
+  /* ---------- Transition wipe ---------- */
+  #wipe{
+    position:fixed; inset:0; z-index:1500;
+    background:linear-gradient(135deg, #C9A24B, #5AA6C9);
+    transform:scaleY(0);
+    transform-origin:bottom;
+    pointer-events:none;
+  }
+  #wipe.animate-in{ transition:transform .5s cubic-bezier(.77,0,.18,1); transform:scaleY(1); transform-origin:bottom; }
+  #wipe.animate-out{ transition:transform .5s cubic-bezier(.77,0,.18,1); transform:scaleY(0); transform-origin:top; }
+
   header{
     position:sticky; top:0; z-index:20;
     display:flex; justify-content:space-between; align-items:center; gap:1.5rem;
-    padding:1.5rem clamp(1.5rem, 5vw, 4rem);
+    padding:1.4rem clamp(1.5rem, 5vw, 4rem);
     border-bottom:1px solid var(--line);
-    background:rgba(235,235,232,0.92);
-    backdrop-filter:blur(6px);
+    background:rgba(17,18,20,0.85);
+    backdrop-filter:blur(8px);
   }
   .brand{ font-family:'Bitter', serif; font-weight:700; font-size:1.3rem; white-space:nowrap; }
-  .brand span{ color:var(--clay); }
+  .brand span{ color:var(--accent); }
   nav{ display:flex; gap:1.6rem; font-size:0.9rem; }
-  nav a{ text-decoration:none; border-bottom:1px solid transparent; padding-bottom:2px; transition:border-color .15s ease; }
-  nav a:hover, nav a:focus-visible{ border-color:var(--ink); }
-  .search-box{
-    display:flex; align-items:center; border:1px solid var(--line);
-    background:var(--panel); padding:0.4rem 0.7rem; gap:0.4rem; min-width:180px; flex:0 1 260px;
-  }
+  nav a{ text-decoration:none; border-bottom:1px solid transparent; padding-bottom:2px; transition:border-color .15s ease, color .15s ease; cursor:pointer; }
+  nav a:hover, nav a.active{ border-color:var(--accent); color:var(--accent); }
+  .search-box{ display:flex; align-items:center; border:1px solid var(--line); background:var(--panel); padding:0.4rem 0.7rem; gap:0.4rem; min-width:180px; flex:0 1 260px; }
   .search-box input{ border:none; background:transparent; outline:none; font-family:'Archivo', sans-serif; font-size:0.85rem; width:100%; color:var(--ink); }
   .search-box svg{ flex-shrink:0; opacity:0.6; }
 
-  .hero{
-    padding:clamp(2.5rem, 6vw, 5rem) clamp(1.5rem, 5vw, 4rem) clamp(3rem, 6vw, 5rem);
-    display:grid; grid-template-columns: 1.3fr 1fr; gap:3rem;
-    border-bottom:1px solid var(--line); align-items:end;
-  }
-  .hero h1{ font-size:clamp(2.4rem, 5.5vw, 4.6rem); line-height:1.02; font-weight:600; }
-  .hero-meta{ font-size:0.95rem; line-height:1.6; max-width:36ch; align-self:end; }
-  .hero-meta p + p{ margin-top:0.9rem; }
-  .kicker{ font-size:0.85rem; color:var(--moss); margin-bottom:0.8rem; }
-  .role-tags{ display:flex; flex-wrap:wrap; gap:0.5rem; margin-top:1.1rem; }
-  .role-tags span{ border:1px solid var(--line); padding:0.3rem 0.7rem; font-size:0.78rem; background:var(--panel); }
+  .page{ display:none; }
+  .page.active{ display:block; }
 
   section{ padding:clamp(2.2rem, 5vw, 3.8rem) clamp(1.5rem, 5vw, 4rem); max-width:1180px; margin:0 auto; }
   .section-head{ display:flex; justify-content:space-between; align-items:baseline; border-bottom:1px solid var(--line); padding-bottom:0.8rem; margin-bottom:2.2rem; }
   .section-head h2{ font-size:1.5rem; font-weight:600; }
   .section-head .count{ font-size:0.85rem; opacity:0.55; }
 
-  .about-grid{ display:grid; grid-template-columns:1fr 1fr; gap:2.5rem; }
-  .about-grid p{ line-height:1.6; font-size:0.98rem; max-width:56ch; }
-  .stat-list{ display:flex; flex-direction:column; gap:1rem; }
-  .stat-row{ display:flex; justify-content:space-between; border-bottom:1px solid var(--line); padding-bottom:0.7rem; font-size:0.92rem; }
-  .stat-row strong{ font-family:'Bitter', serif; font-size:1.05rem; }
+  .hero{
+    padding:clamp(2.8rem, 7vw, 6rem) clamp(1.5rem, 5vw, 4rem) clamp(3rem, 6vw, 5rem);
+    display:grid; grid-template-columns: 1.3fr 1fr; gap:3rem;
+    border-bottom:1px solid var(--line); align-items:end;
+  }
+  .hero h1{ font-size:clamp(2.4rem, 5.5vw, 4.6rem); line-height:1.02; font-weight:600; }
+  .hero-meta{ font-size:0.95rem; line-height:1.6; max-width:36ch; align-self:end; color:var(--dim); }
+  .hero-meta p + p{ margin-top:0.9rem; }
+  .kicker{ font-size:0.85rem; color:var(--accent2); margin-bottom:0.8rem; }
+  .role-tags{ display:flex; flex-wrap:wrap; gap:0.5rem; margin-top:1.1rem; }
+  .role-tags span{ border:1px solid var(--line); padding:0.3rem 0.7rem; font-size:0.78rem; background:var(--panel); color:var(--ink); }
 
-  /* ---------- Case study cards ---------- */
-  .cases{ display:grid; grid-template-columns:1fr; gap:1.6rem; }
-  .case{
-    display:grid;
-    grid-template-columns: 220px 1fr;
-    gap:0;
+  /* ---------- Featured auto-browsing carousel ---------- */
+  .featured-grid{ display:grid; grid-template-columns:repeat(3, 1fr); gap:1.6rem; }
+  .fcard{
     border:1px solid var(--line);
     background:var(--panel);
     overflow:hidden;
   }
-  .case.hidden{ display:none; }
-  .case-swatch{
+  .fcard-window{
     position:relative;
-    padding:1.6rem 1.2rem;
+    aspect-ratio:16/10;
+    overflow:hidden;
+    border-bottom:1px solid var(--line);
+    background:#000;
+  }
+  .mock-page{
+    position:absolute; inset:0;
     display:flex; flex-direction:column; justify-content:space-between;
+    padding:0.9rem 1rem;
+    opacity:0;
+    animation-name:cyclePage;
+    animation-duration:9s;
+    animation-iteration-count:infinite;
+    animation-timing-function:ease-in-out;
     color:#fff;
   }
-  .case-swatch .status{
-    font-size:0.7rem;
-    text-transform:none;
-    background:rgba(255,255,255,0.18);
-    padding:0.25rem 0.55rem;
-    align-self:flex-start;
-    border:1px solid rgba(255,255,255,0.35);
+  .mock-page .bar{ display:flex; justify-content:space-between; font-size:0.65rem; opacity:0.75; }
+  .mock-page .title{ font-family:'Bitter', serif; font-size:1.3rem; font-weight:700; }
+  .mock-page .sub{ font-size:0.7rem; opacity:0.8; max-width:80%; }
+  @keyframes cyclePage{
+    0%{ opacity:0; transform:translateX(2%) rotate(0.5deg); }
+    6%{ opacity:1; transform:translateX(0) rotate(0deg); }
+    28%{ opacity:1; transform:translateX(0) rotate(0deg); }
+    34%{ opacity:0; transform:translateX(-2%) rotate(-0.5deg); }
+    100%{ opacity:0; }
   }
-  .case-swatch .brand-mark{
-    font-family:'Bitter', serif;
-    font-size:1.6rem;
-    line-height:1.1;
-    font-weight:700;
+  @media (prefers-reduced-motion: reduce){
+    .mock-page{ animation:none; opacity:0; }
+    .mock-page:first-child{ opacity:1; }
   }
-  .case-body{ padding:1.6rem 1.8rem; display:flex; flex-direction:column; gap:0.6rem; }
-  .case-body .kind{ font-size:0.78rem; color:var(--clay); }
-  .case-body h3{ font-size:1.3rem; font-weight:600; }
-  .case-body p{ font-size:0.93rem; line-height:1.55; color:rgba(30,30,29,0.82); max-width:64ch; }
-  .feature-chips{ display:flex; flex-wrap:wrap; gap:0.45rem; margin-top:0.3rem; }
-  .feature-chips span{ font-size:0.74rem; border:1px solid var(--line); background:var(--paper); padding:0.2rem 0.55rem; }
-  .case-links{ margin-top:0.5rem; font-size:0.85rem; display:flex; gap:1.2rem; }
-  .case-links a{ text-decoration:none; border-bottom:1px solid var(--ink); }
-  .case-links .no-link{ opacity:0.5; border-bottom:1px solid transparent; }
+  .fcard-info{ padding:1rem 1.1rem; }
+  .fcard-info .kind{ font-size:0.72rem; color:var(--accent2); }
+  .fcard-info h3{ font-size:1.1rem; margin:0.25rem 0 0.4rem; }
+  .fcard-info p{ font-size:0.85rem; color:var(--dim); line-height:1.5; }
+  .fcard-info .link-line{ margin-top:0.6rem; font-size:0.8rem; }
+  .fcard-info .link-line a{ text-decoration:none; border-bottom:1px solid var(--accent); color:var(--accent); }
+  .fcard-info .link-line span.no-link{ color:var(--dim); }
 
+  /* ---------- About ---------- */
+  .about-grid{ display:grid; grid-template-columns:1fr 1fr; gap:2.5rem; }
+  .about-grid p{ line-height:1.6; font-size:0.98rem; max-width:56ch; color:var(--dim); }
+  .stat-list{ display:flex; flex-direction:column; gap:1rem; }
+  .stat-row{ display:flex; justify-content:space-between; border-bottom:1px solid var(--line); padding-bottom:0.7rem; font-size:0.92rem; }
+  .stat-row strong{ font-family:'Bitter', serif; font-size:1.05rem; color:var(--accent); }
+
+  /* ---------- Case study cards (Work page) ---------- */
+  .cases{ display:grid; grid-template-columns:1fr; gap:1.6rem; }
+  .case{ display:grid; grid-template-columns: 220px 1fr; gap:0; border:1px solid var(--line); background:var(--panel); overflow:hidden; transition:transform .2s ease, border-color .2s ease; }
+  .case:hover{ transform:translateY(-2px); border-color:var(--accent); }
+  .case.hidden{ display:none; }
+  .case-swatch{ position:relative; padding:1.6rem 1.2rem; display:flex; flex-direction:column; justify-content:space-between; color:#fff; }
+  .case-swatch .status{ font-size:0.7rem; background:rgba(255,255,255,0.18); padding:0.25rem 0.55rem; align-self:flex-start; border:1px solid rgba(255,255,255,0.35); }
+  .case-swatch .brand-mark{ font-family:'Bitter', serif; font-size:1.6rem; line-height:1.1; font-weight:700; }
+  .case-body{ padding:1.6rem 1.8rem; display:flex; flex-direction:column; gap:0.6rem; }
+  .case-body .kind{ font-size:0.78rem; color:var(--accent2); }
+  .case-body h3{ font-size:1.3rem; font-weight:600; }
+  .case-body p{ font-size:0.93rem; line-height:1.55; color:var(--dim); max-width:64ch; }
+  .feature-chips{ display:flex; flex-wrap:wrap; gap:0.45rem; margin-top:0.3rem; }
+  .feature-chips span{ font-size:0.74rem; border:1px solid var(--line); background:var(--panel2); padding:0.2rem 0.55rem; }
+  .case-links{ margin-top:0.5rem; font-size:0.85rem; display:flex; gap:1.2rem; }
+  .case-links a{ text-decoration:none; border-bottom:1px solid var(--accent); color:var(--accent); }
+  .case-links .no-link{ opacity:0.5; border-bottom:1px solid transparent; }
   .no-results{ display:none; padding:2rem 0; font-size:0.95rem; opacity:0.65; }
 
+  .add-note{ margin-top:2.4rem; padding:1.4rem; border:1px dashed var(--line); font-size:0.88rem; color:var(--dim); text-align:center; }
+
+  /* ---------- Contact ---------- */
   .contact-wrap{ display:grid; grid-template-columns:1fr 1fr; gap:3rem; }
   .contact-form{ display:flex; flex-direction:column; gap:1rem; }
-  .field label{ display:block; font-size:0.8rem; margin-bottom:0.35rem; color:var(--moss); }
+  .field label{ display:block; font-size:0.8rem; margin-bottom:0.35rem; color:var(--accent2); }
   .field input, .field textarea{ width:100%; padding:0.65rem 0.7rem; border:1px solid var(--line); background:var(--panel); font-family:'Archivo', sans-serif; font-size:0.92rem; color:var(--ink); }
   .field textarea{ resize:vertical; min-height:100px; }
   .field-row{ display:flex; gap:1rem; }
   .field-row .field{ flex:1; }
-  .submit-btn{ align-self:flex-start; background:var(--ink); color:var(--paper); border:none; padding:0.75rem 1.6rem; font-family:'Archivo', sans-serif; font-size:0.92rem; cursor:pointer; transition:background .15s ease; }
-  .submit-btn:hover{ background:var(--clay); }
+  .submit-btn{ align-self:flex-start; background:var(--accent); color:#161616; border:none; padding:0.75rem 1.6rem; font-family:'Archivo', sans-serif; font-size:0.92rem; font-weight:600; cursor:pointer; transition:background .15s ease, transform .15s ease; }
+  .submit-btn:hover{ background:var(--accent2); transform:translateY(-1px); }
   .followup-panel{ border:1px solid var(--line); background:var(--panel); padding:1.6rem; }
   .followup-panel h3{ font-size:1.1rem; margin-bottom:0.8rem; }
-  .followup-panel p{ font-size:0.9rem; line-height:1.55; margin-bottom:1rem; }
+  .followup-panel p{ font-size:0.9rem; line-height:1.55; margin-bottom:1rem; color:var(--dim); }
   .followup-options{ display:flex; flex-direction:column; gap:0.6rem; }
   .followup-options label{ display:flex; align-items:center; gap:0.6rem; font-size:0.88rem; border:1px solid var(--line); padding:0.6rem 0.8rem; cursor:pointer; }
-  .form-note{ font-size:0.8rem; color:rgba(30,30,29,0.55); margin-top:0.8rem; }
+  .form-note{ font-size:0.8rem; color:var(--dim); margin-top:0.8rem; }
 
-  footer{ border-top:1px solid var(--line); padding:2rem clamp(1.5rem, 5vw, 4rem); display:flex; justify-content:space-between; font-size:0.82rem; color:rgba(30,30,29,0.6); flex-wrap:wrap; gap:0.5rem; }
+  footer{ border-top:1px solid var(--line); padding:2rem clamp(1.5rem, 5vw, 4rem); display:flex; justify-content:space-between; font-size:0.82rem; color:var(--dim); flex-wrap:wrap; gap:0.5rem; }
 
   @media (max-width: 900px){
+    .featured-grid{ grid-template-columns:1fr 1fr; }
     .case{ grid-template-columns:1fr; }
     .case-swatch{ flex-direction:row; align-items:center; justify-content:space-between; }
   }
@@ -154,11 +210,16 @@
     .hero{ grid-template-columns:1fr; gap:1.5rem; }
     .about-grid{ grid-template-columns:1fr; }
     .contact-wrap{ grid-template-columns:1fr; }
+    .featured-grid{ grid-template-columns:1fr; }
     nav{ gap:1rem; font-size:0.85rem; }
   }
 </style>
 </head>
 <body>
+
+<canvas id="trailCanvas"></canvas>
+<div id="cursorRing"></div>
+<div id="wipe"></div>
 
 <header>
   <div class="brand">Asif<span>.</span></div>
@@ -166,160 +227,314 @@
     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
     <input type="text" id="siteSearch" placeholder="Search projects, theme, features…" aria-label="Search site">
   </div>
-  <nav>
-    <a href="#work">Work</a>
-    <a href="#about">About</a>
-    <a href="#contact">Contact</a>
+  <nav id="mainNav">
+    <a data-page="home" class="active">Home</a>
+    <a data-page="work">Work</a>
+    <a data-page="about">About</a>
+    <a data-page="contact">Contact</a>
   </nav>
 </header>
 
-<section class="hero reveal">
-  <h1>Six brands. Six completely different worlds. Built from scratch.</h1>
-  <div class="hero-meta">
-    <p class="kicker">Web developer — e-commerce &amp; brand sites</p>
-    <p>Every project below is a full, working site: its own theme, its own motion language, its own sound design. Search by name, theme, or feature to jump straight to one.</p>
-    <div class="role-tags">
-      <span>E-commerce</span>
-      <span>3D & motion design</span>
-      <span>Brand sites</span>
-    </div>
-  </div>
-</section>
-
-<section class="about reveal" id="about">
-  <div class="section-head"><h2>About</h2></div>
-  <div class="about-grid">
-    <p>I design and build complete brand websites — not templates. Each project below started as a blank page and a theme, and became a full multi-page site with its own cart system, transition style, and sound identity. I work closely with clients through every revision until the site actually feels like their brand, not a generic storefront.</p>
-    <div class="stat-list">
-      <div class="stat-row"><span>Focus</span><strong>E-commerce & brand websites</strong></div>
-      <div class="stat-row"><span>Sites shipped</span><strong>6 and counting</strong></div>
-      <div class="stat-row"><span>Signature</span><strong>Themed 3D, motion & sound</strong></div>
-      <div class="stat-row"><span>Available for</span><strong>Freelance projects</strong></div>
-    </div>
-  </div>
-</section>
-
-<section class="feed" id="work">
-  <div class="section-head">
-    <h2>Case studies</h2>
-    <span class="count" id="entryCount">6 projects</span>
-  </div>
-
-  <div class="cases" id="entryList">
-
-    <article class="case reveal" data-search="arctic hour watches accessories ice glacier 3d threejs sound">
-      <div class="case-swatch" style="background:linear-gradient(160deg,#274257,#6FA8C9);">
-        <span class="status">Live build</span>
-        <span class="brand-mark">ARCTIC HOUR</span>
-      </div>
-      <div class="case-body">
-        <span class="kind">Watches & accessories — e-commerce</span>
-        <h3>A glacier-ice world with real 3D and sound</h3>
-        <p>Built around a "glacier ice / smokey nitrous" theme: a snowflake mouse cursor, an ice-shatter page transition (rebuilt as a two-sided ice-gate), drifting 3D product displays in Three.js, and synthesized ice sound effects — plus a full cart with WhatsApp + bKash checkout.</p>
-        <div class="feature-chips"><span>Three.js 3D</span><span>Custom cursor</span><span>Sound design</span><span>Cart & checkout</span></div>
-        <div class="case-links"><span class="no-link">Private build — link on request</span></div>
-      </div>
-    </article>
-
-    <article class="case reveal" data-search="clasp co bags wallets belts accessories warm premium fashion">
-      <div class="case-swatch" style="background:linear-gradient(160deg,#7A4A32,#C98A5B);">
-        <span class="status">Live build</span>
-        <span class="brand-mark">CLASP &amp; CO</span>
-      </div>
-      <div class="case-body">
-        <span class="kind">Bags, wallets & wearables — brand site</span>
-        <h3>Approachable premium, not exclusive</h3>
-        <p>A multi-page site (Home, Shop, Our Craft, Reviews, Contact) with a page-turn transition, a custom SVG buckle-motif logo, spring-physics motion, and a "mythic art style of fashion wear" 3D piece placed on the Craft page.</p>
-        <div class="feature-chips"><span>Multi-page</span><span>Custom logo & SVG</span><span>3D showcase</span><span>Page-turn transition</span></div>
-        <div class="case-links"><span class="no-link">Private build — link on request</span></div>
-      </div>
-    </article>
-
-    <article class="case reveal" data-search="eatos food restaurant dhaka editorial avant garde menu booking">
-      <div class="case-swatch" style="background:#111;">
-        <span class="status">Live site</span>
-        <span class="brand-mark">EATO'S</span>
-      </div>
-      <div class="case-body">
-        <span class="kind">Food chain — Dhaka</span>
-        <h3>Editorial, avant-garde, built like a design studio site</h3>
-        <p>Inspired by the Paris studio noth.in: black background, oversized type, a video-style hero, a marquee ticker, and a real Dhaka-priced menu. Voice sound effects greet visitors, announce the menu, and play on booking and page transitions, with a sound on/off toggle.</p>
-        <div class="feature-chips"><span>Editorial layout</span><span>Voice & sound FX</span><span>Real menu & pricing</span></div>
-        <div class="case-links"><a href="https://asif3761.github.io/EATO-S/" target="_blank" rel="noopener">View live site</a></div>
-      </div>
-    </article>
-
-    <article class="case reveal" data-search="sundown sage gadgets empire mid century western facebook shop">
-      <div class="case-swatch" style="background:linear-gradient(160deg,#8C5A2B,#D9A441);">
-        <span class="status">Live site</span>
-        <span class="brand-mark">SUNDOWN &amp; SAGE</span>
-      </div>
-      <div class="case-body">
-        <span class="kind">General e-commerce — Facebook Shop storefront</span>
-        <h3>A mid-century western storefront, free to host</h3>
-        <p>Built for a freelance client selling through a Facebook Page: mid-century western visual direction, Facebook Shop checkout, bKash and WhatsApp support, hosted entirely free on GitHub Pages.</p>
-        <div class="feature-chips"><span>Facebook Shop</span><span>bKash + WhatsApp</span><span>Free GitHub Pages hosting</span></div>
-        <div class="case-links"><a href="https://asif3761.github.io/gadget-s_empire.bd" target="_blank" rel="noopener">View live site</a></div>
-      </div>
-    </article>
-
-    <article class="case reveal" data-search="gadgets empire mobile phones ghost of tsushima game 3d sound anime">
-      <div class="case-swatch" style="background:linear-gradient(160deg,#E8E4DA,#C0392B);">
-        <span class="status">Live build</span>
-        <span class="brand-mark" style="color:#1E1E1D;">GADGET'S EMPIRE</span>
-      </div>
-      <div class="case-body">
-        <span class="kind">Mobile phones & accessories — e-commerce</span>
-        <h3>A game-inspired storefront with real-time motion</h3>
-        <p>Re-themed around Ghost of Tsushima: wind and leaf effects, mouse-reactive motion, blade-shaped buttons, a bright ash palette with crimson/gold accents, swoosh sound on page change, a working discount promo, and 3D extruded brand text with theme-matched lighting.</p>
-        <div class="feature-chips"><span>Game-style motion</span><span>Mouse-reactive FX</span><span>Multi-page + cart</span></div>
-        <div class="case-links"><span class="no-link">Private build — link on request</span></div>
-      </div>
-    </article>
-
-    <article class="case reveal" data-search="noir aurum watches perfumes dark luxury black gold silver assassins creed 3d">
-      <div class="case-swatch" style="background:linear-gradient(160deg,#2b2b2b,#8a8f94);">
-        <span class="status">In progress</span>
-        <span class="brand-mark">NOIR &amp; AURUM</span>
-      </div>
-      <div class="case-body">
-        <span class="kind">Watches & perfumes — luxury e-commerce</span>
-        <h3>From black &amp; gold to a metallic Assassin's Creed steel look</h3>
-        <p>A true 3D site built in Three.js, including 3D page transitions and 3D text — currently in a metallic silver/steel direction with matching UI sound design. Cart and checkout reuse the same WhatsApp + bKash system as the other stores.</p>
-        <div class="feature-chips"><span>Full 3D site</span><span>3D transitions</span><span>Themed UI sound</span></div>
-        <div class="case-links"><span class="no-link">In development</span></div>
-      </div>
-    </article>
-
-  </div>
-
-  <p class="no-results" id="noResults">No projects match that search.</p>
-</section>
-
-<section class="contact reveal" id="contact">
-  <div class="section-head"><h2>Get in touch</h2></div>
-  <div class="contact-wrap">
-    <form class="contact-form" onsubmit="event.preventDefault(); alert('This form is a visual sample — it needs to be connected to an email service or backend before it can actually send messages.');">
-      <div class="field"><label for="name">Name</label><input type="text" id="name" name="name" required></div>
-      <div class="field-row">
-        <div class="field"><label for="email">Email</label><input type="email" id="email" name="email" required></div>
-        <div class="field"><label for="phone">Phone (optional)</label><input type="tel" id="phone" name="phone"></div>
-      </div>
-      <div class="field"><label for="message">Message</label><textarea id="message" name="message" required></textarea></div>
-      <button type="submit" class="submit-btn">Send message</button>
-      <p class="form-note">Sample form — connect this to an email service (like Formspree) or a backend before it can send real messages.</p>
-    </form>
-    <div class="followup-panel">
-      <h3>Request a follow-up</h3>
-      <p>Pick what you'd like followed up on, and leave your contact details in the form.</p>
-      <div class="followup-options">
-        <label><input type="checkbox" name="followup" value="call"> Call me back</label>
-        <label><input type="checkbox" name="followup" value="email"> Email me back</label>
-        <label><input type="checkbox" name="followup" value="new-project"> Discuss a new project</label>
+<!-- ================= HOME ================= -->
+<div class="page active" id="page-home">
+  <section class="hero reveal">
+    <h1>Six brands. Six completely different worlds. Built from scratch.</h1>
+    <div class="hero-meta">
+      <p class="kicker">Web developer — e-commerce &amp; brand sites</p>
+      <p>Every project below is a full, working site: its own theme, motion language, and sound design. Watch the previews cycle through their pages on their own — no clicking needed.</p>
+      <div class="role-tags">
+        <span>E-commerce</span>
+        <span>3D & motion design</span>
+        <span>Brand sites</span>
       </div>
     </div>
-  </div>
-</section>
+  </section>
+
+  <section class="reveal">
+    <div class="section-head">
+      <h2>Featured sites</h2>
+      <span class="count">Auto-browsing previews</span>
+    </div>
+    <div class="featured-grid">
+
+      <div class="fcard">
+        <div class="fcard-window" style="background:#0d1b26;">
+          <div class="mock-page" style="background:linear-gradient(160deg,#12293b,#1c4a63); animation-delay:0s;">
+            <div class="bar"><span>ARCTIC HOUR</span><span>Home</span></div>
+            <div><div class="title">Cold-forged time.</div><div class="sub">3D drifting product showcase</div></div>
+          </div>
+          <div class="mock-page" style="background:linear-gradient(160deg,#1c4a63,#3f7f9c); animation-delay:3s;">
+            <div class="bar"><span>ARCTIC HOUR</span><span>Shop</span></div>
+            <div><div class="title">The Collection</div><div class="sub">Hover any piece for detail</div></div>
+          </div>
+          <div class="mock-page" style="background:linear-gradient(160deg,#12293b,#274257); animation-delay:6s;">
+            <div class="bar"><span>ARCTIC HOUR</span><span>Cart</span></div>
+            <div><div class="title">Ice-gate checkout</div><div class="sub">WhatsApp + bKash handoff</div></div>
+          </div>
+        </div>
+        <div class="fcard-info">
+          <span class="kind">Watches & accessories</span>
+          <h3>Arctic Hour</h3>
+          <p>Glacier-ice theme, snowflake cursor, Three.js 3D products.</p>
+          <div class="link-line"><span class="no-link">Private build — link on request</span></div>
+        </div>
+      </div>
+
+      <div class="fcard">
+        <div class="fcard-window" style="background:#1e130c;">
+          <div class="mock-page" style="background:linear-gradient(160deg,#6a3d22,#a86a3b); animation-delay:1s;">
+            <div class="bar"><span>CLASP &amp; CO</span><span>Home</span></div>
+            <div><div class="title">Made to hold.</div><div class="sub">Approachable premium accessories</div></div>
+          </div>
+          <div class="mock-page" style="background:linear-gradient(160deg,#a86a3b,#c98a5b); animation-delay:4s;">
+            <div class="bar"><span>CLASP &amp; CO</span><span>Our Craft</span></div>
+            <div><div class="title">Mythic craftsmanship</div><div class="sub">3D fashion showcase</div></div>
+          </div>
+          <div class="mock-page" style="background:linear-gradient(160deg,#6a3d22,#7a4a32); animation-delay:7s;">
+            <div class="bar"><span>CLASP &amp; CO</span><span>Reviews</span></div>
+            <div><div class="title">Loved by many</div><div class="sub">Page-turn navigation</div></div>
+          </div>
+        </div>
+        <div class="fcard-info">
+          <span class="kind">Bags, wallets & wearables</span>
+          <h3>Clasp &amp; Co</h3>
+          <p>Warm premium brand site with a custom buckle logo and page-turn transitions.</p>
+          <div class="link-line"><span class="no-link">Private build — link on request</span></div>
+        </div>
+      </div>
+
+      <div class="fcard">
+        <div class="fcard-window" style="background:#000;">
+          <div class="mock-page" style="background:linear-gradient(160deg,#0a0a0a,#222); animation-delay:2s;">
+            <div class="bar"><span>EATO'S</span><span>Home</span></div>
+            <div><div class="title">TASTE, DISRUPTED.</div><div class="sub">Editorial, avant-garde design</div></div>
+          </div>
+          <div class="mock-page" style="background:linear-gradient(160deg,#222,#3a3a3a); animation-delay:5s;">
+            <div class="bar"><span>EATO'S</span><span>Menu</span></div>
+            <div><div class="title">Burgers. Steaks. Grills.</div><div class="sub">Real Dhaka pricing</div></div>
+          </div>
+          <div class="mock-page" style="background:linear-gradient(160deg,#0a0a0a,#151515); animation-delay:8s;">
+            <div class="bar"><span>EATO'S</span><span>Book</span></div>
+            <div><div class="title">Reserve a table</div><div class="sub">Voice greeting on entry</div></div>
+          </div>
+        </div>
+        <div class="fcard-info">
+          <span class="kind">Food chain — Dhaka</span>
+          <h3>Eato's</h3>
+          <p>Black-background, oversized-type site with voice and sound effects.</p>
+          <div class="link-line"><a href="https://asif3761.github.io/EATO-S/" target="_blank" rel="noopener">View live site →</a></div>
+        </div>
+      </div>
+
+      <div class="fcard">
+        <div class="fcard-window" style="background:#2b210f;">
+          <div class="mock-page" style="background:linear-gradient(160deg,#8c5a2b,#d9a441); animation-delay:0.5s;">
+            <div class="bar"><span>SUNDOWN &amp; SAGE</span><span>Home</span></div>
+            <div><div class="title">Western, made modern.</div><div class="sub">Mid-century western theme</div></div>
+          </div>
+          <div class="mock-page" style="background:linear-gradient(160deg,#d9a441,#e8c274); animation-delay:3.5s;">
+            <div class="bar"><span>SUNDOWN &amp; SAGE</span><span>Shop</span></div>
+            <div><div class="title">The Catalog</div><div class="sub">Checkout via Facebook Shop</div></div>
+          </div>
+          <div class="mock-page" style="background:linear-gradient(160deg,#8c5a2b,#6b431e); animation-delay:6.5s;">
+            <div class="bar"><span>SUNDOWN &amp; SAGE</span><span>Contact</span></div>
+            <div><div class="title">bKash + WhatsApp</div><div class="sub">Free GitHub Pages hosting</div></div>
+          </div>
+        </div>
+        <div class="fcard-info">
+          <span class="kind">General e-commerce</span>
+          <h3>Sundown &amp; Sage</h3>
+          <p>Facebook Shop storefront, free to host, built for a real freelance client.</p>
+          <div class="link-line"><a href="https://asif3761.github.io/gadget-s_empire.bd" target="_blank" rel="noopener">View live site →</a></div>
+        </div>
+      </div>
+
+      <div class="fcard">
+        <div class="fcard-window" style="background:#1a1a18;">
+          <div class="mock-page" style="background:linear-gradient(160deg,#e8e4da,#c0392b); animation-delay:1.5s;">
+            <div class="bar" style="color:#111;"><span>GADGET'S EMPIRE</span><span>Home</span></div>
+            <div><div class="title" style="color:#111;">Warrior. Reimagined.</div><div class="sub" style="color:#111;">Ghost of Tsushima-inspired</div></div>
+          </div>
+          <div class="mock-page" style="background:linear-gradient(160deg,#c0392b,#8e2a1f); animation-delay:4.5s;">
+            <div class="bar"><span>GADGET'S EMPIRE</span><span>Shop</span></div>
+            <div><div class="title">iPhones & Chargers</div><div class="sub">Mouse-reactive wind effects</div></div>
+          </div>
+          <div class="mock-page" style="background:linear-gradient(160deg,#e8e4da,#b7b19f); animation-delay:7.5s;">
+            <div class="bar" style="color:#111;"><span>GADGET'S EMPIRE</span><span>Promo</span></div>
+            <div><div class="title" style="color:#111;">10% off, unlocked</div><div class="sub" style="color:#111;">Swoosh transitions</div></div>
+          </div>
+        </div>
+        <div class="fcard-info">
+          <span class="kind">Mobile phones & accessories</span>
+          <h3>Gadget's Empire</h3>
+          <p>Game-inspired storefront with blade-shaped buttons and real-time motion.</p>
+          <div class="link-line"><span class="no-link">Private build — link on request</span></div>
+        </div>
+      </div>
+
+      <div class="fcard">
+        <div class="fcard-window" style="background:#1c1c1c;">
+          <div class="mock-page" style="background:linear-gradient(160deg,#2b2b2b,#565656); animation-delay:2.5s;">
+            <div class="bar"><span>NOIR &amp; AURUM</span><span>Home</span></div>
+            <div><div class="title">Steel & silence.</div><div class="sub">True 3D site, Three.js</div></div>
+          </div>
+          <div class="mock-page" style="background:linear-gradient(160deg,#565656,#8a8f94); animation-delay:5.5s;">
+            <div class="bar"><span>NOIR &amp; AURUM</span><span>Shop</span></div>
+            <div><div class="title">Watches & Perfumes</div><div class="sub">3D page transitions</div></div>
+          </div>
+          <div class="mock-page" style="background:linear-gradient(160deg,#2b2b2b,#3a3a3a); animation-delay:8.5s;">
+            <div class="bar"><span>NOIR &amp; AURUM</span><span>Status</span></div>
+            <div><div class="title">In development</div><div class="sub">Metallic UI sound design</div></div>
+          </div>
+        </div>
+        <div class="fcard-info">
+          <span class="kind">Watches & perfumes — luxury</span>
+          <h3>Noir &amp; Aurum</h3>
+          <p>Metallic silver/steel direction, currently in progress.</p>
+          <div class="link-line"><span class="no-link">In development</span></div>
+        </div>
+      </div>
+
+    </div>
+    <div class="add-note">Send me the links to any other sites you want featured here — I'll swap these mock previews for real ones and wire the auto-cycling to your actual pages.</div>
+  </section>
+</div>
+
+<!-- ================= WORK ================= -->
+<div class="page" id="page-work">
+  <section class="reveal">
+    <div class="section-head">
+      <h2>Case studies</h2>
+      <span class="count" id="entryCount">6 projects</span>
+    </div>
+    <div class="cases" id="entryList">
+
+      <article class="case reveal" data-search="arctic hour watches accessories ice glacier 3d threejs sound">
+        <div class="case-swatch" style="background:linear-gradient(160deg,#274257,#6FA8C9);">
+          <span class="status">Live build</span><span class="brand-mark">ARCTIC HOUR</span>
+        </div>
+        <div class="case-body">
+          <span class="kind">Watches & accessories — e-commerce</span>
+          <h3>A glacier-ice world with real 3D and sound</h3>
+          <p>Snowflake cursor, an ice-gate page transition, drifting 3D product displays in Three.js, synthesized ice sound effects, and a full cart with WhatsApp + bKash checkout.</p>
+          <div class="feature-chips"><span>Three.js 3D</span><span>Custom cursor</span><span>Sound design</span><span>Cart & checkout</span></div>
+          <div class="case-links"><span class="no-link">Private build — link on request</span></div>
+        </div>
+      </article>
+
+      <article class="case reveal" data-search="clasp co bags wallets belts accessories warm premium fashion">
+        <div class="case-swatch" style="background:linear-gradient(160deg,#7A4A32,#C98A5B);">
+          <span class="status">Live build</span><span class="brand-mark">CLASP &amp; CO</span>
+        </div>
+        <div class="case-body">
+          <span class="kind">Bags, wallets & wearables — brand site</span>
+          <h3>Approachable premium, not exclusive</h3>
+          <p>Multi-page (Home, Shop, Our Craft, Reviews, Contact) with a page-turn transition, custom SVG logo, spring-physics motion, and a 3D fashion piece on the Craft page.</p>
+          <div class="feature-chips"><span>Multi-page</span><span>Custom logo & SVG</span><span>3D showcase</span><span>Page-turn transition</span></div>
+          <div class="case-links"><span class="no-link">Private build — link on request</span></div>
+        </div>
+      </article>
+
+      <article class="case reveal" data-search="eatos food restaurant dhaka editorial avant garde menu booking">
+        <div class="case-swatch" style="background:#111;">
+          <span class="status">Live site</span><span class="brand-mark">EATO'S</span>
+        </div>
+        <div class="case-body">
+          <span class="kind">Food chain — Dhaka</span>
+          <h3>Editorial, avant-garde, studio-grade</h3>
+          <p>Black background, oversized type, video-style hero, marquee ticker, a real Dhaka-priced menu, and voice/sound effects on entry, booking, and transitions.</p>
+          <div class="feature-chips"><span>Editorial layout</span><span>Voice & sound FX</span><span>Real menu & pricing</span></div>
+          <div class="case-links"><a href="https://asif3761.github.io/EATO-S/" target="_blank" rel="noopener">View live site</a></div>
+        </div>
+      </article>
+
+      <article class="case reveal" data-search="sundown sage gadgets empire mid century western facebook shop">
+        <div class="case-swatch" style="background:linear-gradient(160deg,#8C5A2B,#D9A441);">
+          <span class="status">Live site</span><span class="brand-mark">SUNDOWN &amp; SAGE</span>
+        </div>
+        <div class="case-body">
+          <span class="kind">General e-commerce — Facebook Shop storefront</span>
+          <h3>A mid-century western storefront, free to host</h3>
+          <p>Built for a freelance client selling through a Facebook Page: Facebook Shop checkout, bKash and WhatsApp support, hosted free on GitHub Pages.</p>
+          <div class="feature-chips"><span>Facebook Shop</span><span>bKash + WhatsApp</span><span>Free hosting</span></div>
+          <div class="case-links"><a href="https://asif3761.github.io/gadget-s_empire.bd" target="_blank" rel="noopener">View live site</a></div>
+        </div>
+      </article>
+
+      <article class="case reveal" data-search="gadgets empire mobile phones ghost of tsushima game 3d sound anime">
+        <div class="case-swatch" style="background:linear-gradient(160deg,#E8E4DA,#C0392B);">
+          <span class="status">Live build</span><span class="brand-mark" style="color:#1E1E1D;">GADGET'S EMPIRE</span>
+        </div>
+        <div class="case-body">
+          <span class="kind">Mobile phones & accessories — e-commerce</span>
+          <h3>A game-inspired storefront with real-time motion</h3>
+          <p>Ghost of Tsushima-themed: wind/leaf effects, mouse-reactive motion, blade-shaped buttons, swoosh transitions, a working discount promo, and 3D extruded brand text.</p>
+          <div class="feature-chips"><span>Game-style motion</span><span>Mouse-reactive FX</span><span>Multi-page + cart</span></div>
+          <div class="case-links"><span class="no-link">Private build — link on request</span></div>
+        </div>
+      </article>
+
+      <article class="case reveal" data-search="noir aurum watches perfumes dark luxury black gold silver assassins creed 3d">
+        <div class="case-swatch" style="background:linear-gradient(160deg,#2b2b2b,#8a8f94);">
+          <span class="status">In progress</span><span class="brand-mark">NOIR &amp; AURUM</span>
+        </div>
+        <div class="case-body">
+          <span class="kind">Watches & perfumes — luxury e-commerce</span>
+          <h3>A metallic Assassin's Creed steel look</h3>
+          <p>A true 3D site in Three.js with 3D transitions and 3D text, currently in a metallic silver/steel direction with matching UI sound design.</p>
+          <div class="feature-chips"><span>Full 3D site</span><span>3D transitions</span><span>Themed UI sound</span></div>
+          <div class="case-links"><span class="no-link">In development</span></div>
+        </div>
+      </article>
+
+    </div>
+    <p class="no-results" id="noResults">No projects match that search.</p>
+  </section>
+</div>
+
+<!-- ================= ABOUT ================= -->
+<div class="page" id="page-about">
+  <section class="reveal">
+    <div class="section-head"><h2>About</h2></div>
+    <div class="about-grid">
+      <p>I design and build complete brand websites — not templates. Each project started as a blank page and a theme, and became a full multi-page site with its own cart system, transition style, and sound identity. I work closely with clients through every revision until the site actually feels like their brand.</p>
+      <div class="stat-list">
+        <div class="stat-row"><span>Focus</span><strong>E-commerce & brand websites</strong></div>
+        <div class="stat-row"><span>Sites shipped</span><strong>6 and counting</strong></div>
+        <div class="stat-row"><span>Signature</span><strong>Themed 3D, motion & sound</strong></div>
+        <div class="stat-row"><span>Available for</span><strong>Freelance projects</strong></div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ================= CONTACT ================= -->
+<div class="page" id="page-contact">
+  <section class="reveal">
+    <div class="section-head"><h2>Get in touch</h2></div>
+    <div class="contact-wrap">
+      <form class="contact-form" onsubmit="event.preventDefault(); alert('This form is a visual sample — it needs to be connected to an email service or backend before it can actually send messages.');">
+        <div class="field"><label for="name">Name</label><input type="text" id="name" name="name" required></div>
+        <div class="field-row">
+          <div class="field"><label for="email">Email</label><input type="email" id="email" name="email" required></div>
+          <div class="field"><label for="phone">Phone (optional)</label><input type="tel" id="phone" name="phone"></div>
+        </div>
+        <div class="field"><label for="message">Message</label><textarea id="message" name="message" required></textarea></div>
+        <button type="submit" class="submit-btn">Send message</button>
+        <p class="form-note">Sample form — connect this to an email service (like Formspree) or a backend before it can send real messages.</p>
+      </form>
+      <div class="followup-panel">
+        <h3>Request a follow-up</h3>
+        <p>Pick what you'd like followed up on, and leave your contact details in the form.</p>
+        <div class="followup-options">
+          <label><input type="checkbox" name="followup" value="call"> Call me back</label>
+          <label><input type="checkbox" name="followup" value="email"> Email me back</label>
+          <label><input type="checkbox" name="followup" value="new-project"> Discuss a new project</label>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
 
 <footer>
   <span>Asif — web developer portfolio</span>
@@ -327,19 +542,19 @@
 </footer>
 
 <script>
-  const revealEls = document.querySelectorAll('.reveal');
+  // ---- Reveal on scroll ----
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
-      if (entry.isIntersecting) { entry.target.classList.add('is-visible'); observer.unobserve(entry.target); }
+      if (entry.isIntersecting){ entry.target.classList.add('is-visible'); observer.unobserve(entry.target); }
     });
   }, { threshold: 0.12 });
-  revealEls.forEach(el => observer.observe(el));
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
 
+  // ---- Search (Work page) ----
   const searchInput = document.getElementById('siteSearch');
   const cases = document.querySelectorAll('#entryList .case');
   const noResults = document.getElementById('noResults');
   const entryCount = document.getElementById('entryCount');
-
   searchInput.addEventListener('input', () => {
     const q = searchInput.value.trim().toLowerCase();
     let visible = 0;
@@ -349,9 +564,85 @@
       c.classList.toggle('hidden', !match);
       if (match) visible++;
     });
-    noResults.style.display = visible === 0 ? 'block' : 'none';
-    entryCount.textContent = visible + (visible === 1 ? ' project' : ' projects');
+    if (noResults) noResults.style.display = visible === 0 ? 'block' : 'none';
+    if (entryCount) entryCount.textContent = visible + (visible === 1 ? ' project' : ' projects');
+    if (q.length > 1) switchPage('work');
   });
+
+  // ---- Multi-page navigation with wipe transition ----
+  const wipe = document.getElementById('wipe');
+  const navLinks = document.querySelectorAll('#mainNav a');
+  let transitioning = false;
+
+  function switchPage(target){
+    if (transitioning) return;
+    const current = document.querySelector('.page.active');
+    if (current && current.id === 'page-' + target) return;
+    transitioning = true;
+    wipe.classList.add('animate-in');
+    setTimeout(() => {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      const next = document.getElementById('page-' + target);
+      if (next) next.classList.add('active');
+      navLinks.forEach(l => l.classList.toggle('active', l.dataset.page === target));
+      next.querySelectorAll('.reveal').forEach(el => { el.classList.remove('is-visible'); observer.observe(el); });
+      window.scrollTo({ top: 0, behavior: 'instant' in window ? 'instant' : 'auto' });
+      wipe.classList.remove('animate-in');
+      wipe.classList.add('animate-out');
+      setTimeout(() => { wipe.classList.remove('animate-out'); transitioning = false; }, 520);
+    }, 520);
+  }
+  navLinks.forEach(link => link.addEventListener('click', () => switchPage(link.dataset.page)));
+
+  // ---- Game-style cursor + mouse trail (desktop, motion allowed) ----
+  const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const isFinePointer = window.matchMedia('(pointer: fine)').matches;
+
+  if (isFinePointer && !prefersReduced){
+    document.body.classList.add('custom-cursor-active');
+    const ring = document.getElementById('cursorRing');
+    let mx = window.innerWidth/2, my = window.innerHeight/2, rx = mx, ry = my;
+    window.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
+    document.querySelectorAll('a, button, input, textarea').forEach(el => {
+      el.addEventListener('mouseenter', () => ring.classList.add('hot'));
+      el.addEventListener('mouseleave', () => ring.classList.remove('hot'));
+    });
+    function animateRing(){
+      rx += (mx - rx) * 0.18; ry += (my - ry) * 0.18;
+      ring.style.transform = `translate(${rx}px, ${ry}px) translate(-50%,-50%)`;
+      requestAnimationFrame(animateRing);
+    }
+    animateRing();
+
+    const canvas = document.getElementById('trailCanvas');
+    const ctx = canvas.getContext('2d');
+    function resize(){ canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+    resize(); window.addEventListener('resize', resize);
+    let particles = [];
+    window.addEventListener('mousemove', e => {
+      for (let i=0;i<2;i++){
+        particles.push({ x:e.clientX, y:e.clientY, life:1, r: 1.5+Math.random()*2.2, dx:(Math.random()-0.5)*0.6, dy:(Math.random()-0.5)*0.6 });
+      }
+      if (particles.length > 160) particles.splice(0, particles.length-160);
+    });
+    function renderTrail(){
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      particles.forEach(p => {
+        p.life -= 0.018; p.x += p.dx; p.y += p.dy;
+        if (p.life > 0){
+          ctx.beginPath();
+          ctx.fillStyle = `rgba(201,162,75,${p.life*0.6})`;
+          ctx.arc(p.x, p.y, p.r * p.life, 0, Math.PI*2);
+          ctx.fill();
+        }
+      });
+      particles = particles.filter(p => p.life > 0);
+      requestAnimationFrame(renderTrail);
+    }
+    renderTrail();
+  } else {
+    document.getElementById('cursorRing').style.display = 'none';
+  }
 </script>
 
 </body>
